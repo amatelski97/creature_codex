@@ -1,0 +1,37 @@
+/// <reference types="react" />
+export declare const MRT_Default_Icons: {
+    readonly IconArrowAutofitContent: (props: import("@tabler/icons-react").TablerIconsProps) => JSX.Element;
+    readonly IconArrowsSort: (props: import("@tabler/icons-react").TablerIconsProps) => JSX.Element;
+    readonly IconBaselineDensityLarge: (props: import("@tabler/icons-react").TablerIconsProps) => JSX.Element;
+    readonly IconBaselineDensityMedium: (props: import("@tabler/icons-react").TablerIconsProps) => JSX.Element;
+    readonly IconBaselineDensitySmall: (props: import("@tabler/icons-react").TablerIconsProps) => JSX.Element;
+    readonly IconBoxMultiple: (props: import("@tabler/icons-react").TablerIconsProps) => JSX.Element;
+    readonly IconChevronDown: (props: import("@tabler/icons-react").TablerIconsProps) => JSX.Element;
+    readonly IconChevronLeft: (props: import("@tabler/icons-react").TablerIconsProps) => JSX.Element;
+    readonly IconChevronLeftPipe: (props: import("@tabler/icons-react").TablerIconsProps) => JSX.Element;
+    readonly IconChevronRight: (props: import("@tabler/icons-react").TablerIconsProps) => JSX.Element;
+    readonly IconChevronRightPipe: (props: import("@tabler/icons-react").TablerIconsProps) => JSX.Element;
+    readonly IconChevronsDown: (props: import("@tabler/icons-react").TablerIconsProps) => JSX.Element;
+    readonly IconCircleX: (props: import("@tabler/icons-react").TablerIconsProps) => JSX.Element;
+    readonly IconClearAll: (props: import("@tabler/icons-react").TablerIconsProps) => JSX.Element;
+    readonly IconColumns: (props: import("@tabler/icons-react").TablerIconsProps) => JSX.Element;
+    readonly IconDeviceFloppy: (props: import("@tabler/icons-react").TablerIconsProps) => JSX.Element;
+    readonly IconDots: (props: import("@tabler/icons-react").TablerIconsProps) => JSX.Element;
+    readonly IconDotsVertical: (props: import("@tabler/icons-react").TablerIconsProps) => JSX.Element;
+    readonly IconEdit: (props: import("@tabler/icons-react").TablerIconsProps) => JSX.Element;
+    readonly IconEyeOff: (props: import("@tabler/icons-react").TablerIconsProps) => JSX.Element;
+    readonly IconFilter: (props: import("@tabler/icons-react").TablerIconsProps) => JSX.Element;
+    readonly IconFilterCog: (props: import("@tabler/icons-react").TablerIconsProps) => JSX.Element;
+    readonly IconFilterOff: (props: import("@tabler/icons-react").TablerIconsProps) => JSX.Element;
+    readonly IconGripHorizontal: (props: import("@tabler/icons-react").TablerIconsProps) => JSX.Element;
+    readonly IconMaximize: (props: import("@tabler/icons-react").TablerIconsProps) => JSX.Element;
+    readonly IconMinimize: (props: import("@tabler/icons-react").TablerIconsProps) => JSX.Element;
+    readonly IconPinned: (props: import("@tabler/icons-react").TablerIconsProps) => JSX.Element;
+    readonly IconPinnedOff: (props: import("@tabler/icons-react").TablerIconsProps) => JSX.Element;
+    readonly IconSearch: (props: import("@tabler/icons-react").TablerIconsProps) => JSX.Element;
+    readonly IconSearchOff: (props: import("@tabler/icons-react").TablerIconsProps) => JSX.Element;
+    readonly IconSortAscending: (props: import("@tabler/icons-react").TablerIconsProps) => JSX.Element;
+    readonly IconSortDescending: (props: import("@tabler/icons-react").TablerIconsProps) => JSX.Element;
+    readonly IconX: (props: import("@tabler/icons-react").TablerIconsProps) => JSX.Element;
+};
+export type MRT_Icons = Record<keyof typeof MRT_Default_Icons, any>;
