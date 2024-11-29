@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from pydantic import BaseModel
+from typing import Optional
 from enum import Enum
 
 class GenderEnum(str, Enum):
@@ -9,14 +9,14 @@ class GenderEnum(str, Enum):
 
 class ProfilesCreate(BaseModel):
     name: str
-    age: int
+    age: Optional[int] = None
     species: str
     scientific_name: str
     gender: GenderEnum  # Enforce enum validation
 
 class ProfilesBase(BaseModel):
     name: str
-    age: int
+    age: Optional[int] = None
     species: str
     scientific_name: str
     gender: str

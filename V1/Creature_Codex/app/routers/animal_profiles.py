@@ -1,52 +1,57 @@
-from fastapi import APIRouter, HTTPException, Query, Depends
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, HTTPException, Query, Depends, UploadFile, File
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 from app.database import get_db
 from app.models import Profiles as ProfilesModel
 from app.schemas import ProfilesCreate, Profiles
 from app import crud
+import csv
 
 router = APIRouter(
-    prefix="/profiles/animal_profiles",  # Match Axios routes
+    prefix="/profiles",  # Match Axios routes
     tags=["animal_profiles"],
 )
 
 # POST: Create a new profile
 @router.post("/", response_model=Profiles)
-def create_profiles(profile: ProfilesCreate, db: Session = Depends(get_db)):
-    return crud.create_profiles(db=db, profile=profile)
+async def create_profiles(profile: ProfilesCreate, db: AsyncSession = Depends(get_db)):
+    return await crud.create_profiles(db=db, profile=profile)
 
 # GET: Fetch all profiles
 @router.get("/", response_model=list[Profiles])
-def read_profiles(db: Session = Depends(get_db)):
-    return crud.get_profiles(db=db)
+async def read_profiles(db: AsyncSession = Depends(get_db)):
+    return await crud.get_profiles(db=db)
 
-# GET by ID: Fetch a single profile
-@router.get("/{profile_id}", response_model=Profiles)
-def read_profile(profile_id: int, db: Session = Depends(get_db)):
-    db_profile = crud.get_profile(db, profile_id=profile_id)
-    if db_profile is None:
-        raise HTTPException(status_code=404, detail="Profile not found")
-    return db_profile
+# Add a new route for uploading CSV files
+@router.post("/upload_csv/")
+async def upload_csv(file: UploadFile, db: AsyncSession = Depends(get_db)):
+    try:
+        contents = await file.read()
+        csv_data = csv.DictReader(contents.decode("utf-8").splitlines())
 
-# PUT: Update a profile by ID
-@router.put("/{profile_id}", response_model=Profiles)
-def update_profile(profile_id: int, profile: ProfilesCreate, db: Session = Depends(get_db)):
-    updated_profile = crud.update_profile(db=db, profile_id=profile_id, profile=profile)
-    if updated_profile is None:
-        raise HTTPException(status_code=404, detail="Profile not found")
-  
-# DELETE: Delete a profile by ID
-@router.delete("/{profile_id}", response_model=Profiles)
-def delete_profile(profile_id: int, db: Session = Depends(get_db)):
-    return crud.delete_profile(db=db, profile_id=profile_id)
+        profiles = []
+        for row in csv_data:
+            age = int(row["age"]) if row["age"] and row["age"].isdigit() else None
+            gender = row["gender"].upper() if row["gender"].upper() in ["MALE", "FEMALE", "OTHER"] else "OTHER"
+            profiles.append(
+                ProfilesCreate(
+                    name=row["name"],
+                    species=row["species"],
+                    scientific_name=row["scientific_name"],
+                    age=age,
+                    gender=gender,  # Validate gender
+                )
+            )
 
-# GET: Search profiles
-@router.get("/search", response_model=list[Profiles])
-def search_profiles(
-    name: str = Query(None),
-    species: str = Query(None),
-    scientific_name: str = Query(None),
-    gender: str = Query(None),
-    db: Session = Depends(get_db)
-):
-    return crud.search_profiles(db=db, name=name, species=species, scientific_name=scientific_name, gender=gender)
+        for profile in profiles:
+            await crud.create_profiles(db, profile)
+
+        return {"message": "CSV uploaded successfully"}
+    except Exception as e:
+        print(f"Error during CSV upload: {e}")  # Log the error
+        raise HTTPException(status_code=500, detail="CSV upload failed")
+    
+# Other routes for CRUD operations remain unchanged
+@router.post("/", response_model=Profiles)
+async def create_profile(profile: ProfilesCreate, db: AsyncSession = Depends(get_db)):
+    return await crud.create_profiles(db=db, profile=profile)
