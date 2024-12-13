@@ -1,12 +1,18 @@
-from sqlalchemy.ext.asyncio import AsyncSession
+from psycopg_pool import AsyncConnectionPool
 from fastapi import Depends
-from app.database import async_session_maker
+from app.database import db_pool
 from typing import AsyncGenerator
 
-async def get_database() -> AsyncGenerator[AsyncSession, None]:
+async def get_db() -> AsyncConnectionPool:
     """
-    Dependency that provides an asynchronous database session.
-    Ensures proper cleanup after each request.
+    Dependency to provide access to the database pool.
     """
-    async with async_session_maker() as session:
-        yield session
+    return db_pool
+
+async def get_db_connection() -> AsyncGenerator:
+    """
+    Dependency to provide a single database connection for a request.
+    Ensures cleanup after the connection is used.
+    """
+    async with db_pool.connection() as connection:
+        yield connection

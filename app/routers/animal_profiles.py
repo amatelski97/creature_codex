@@ -1,56 +1,77 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
-from app.core.dependencies import get_database
+from fastapi import APIRouter, Depends, HTTPException, Query
+from typing import Optional
+
+from psycopg_pool import AsyncConnectionPool
+
+from app.core.dependencies import get_db_connection
 from app.schemas.animal_profiles import AnimalProfileCreate, AnimalProfileResponse
-from app.services.animal_profiles import (
-    fetch_all_profiles,
-    fetch_profile_by_id,
-    add_new_profile,
-    remove_profile,
-    update_profile_by_id
+from app.repositories.animal_profiles import (
+    get_all_profiles,
+    get_profile_by_id,
+    create_profile,
+    delete_profile,
+    update_profile,
 )
 
 router = APIRouter()
 
-@router.get("", response_model=list[AnimalProfileResponse])
-async def get_all_profiles(db: AsyncSession = Depends(get_database)):
+@router.get("/all", response_model=list[AnimalProfileResponse])
+async def fetch_all_profiles(db_pool: AsyncConnectionPool = Depends(get_db_connection)):
     """
-    route to fetch all animal profiles
+    Fetch all animal profiles.
     """
-    return await fetch_all_profiles(db)
+    return await get_all_profiles(db_pool)
+
+@router.get("/", response_model=list[AnimalProfileResponse])
+async def fetch_profiles_by_category(
+    category: str | None = Query(None, description="Filter by animal category"),
+    db_pool: AsyncConnectionPool = Depends(get_db_connection),
+):
+    """
+    Fetch animal profiles, optionally filtered by category.
+    """
+    return await get_all_profiles(db_pool, category)
 
 @router.get("/{profile_id}", response_model=AnimalProfileResponse)
-async def get_profile_by_id(profile_id: int, db: AsyncSession = Depends(get_database)):
+async def fetch_profile_by_id(profile_id: int, db_pool: AsyncConnectionPool = Depends(get_db_connection)):
     """
-    route to fetch an animal profile by its ID
+    Fetch a single animal profile by its ID.
     """
-    return await fetch_profile_by_id(db, profile_id)
+    profile = await get_profile_by_id(db_pool, profile_id)
+    if not profile:
+        raise HTTPException(status_code=404, detail="Profile not found")
+    return profile
 
 @router.post("", response_model=AnimalProfileResponse)
-async def create_profile(
-    profile_data: AnimalProfileCreate,
-    db: AsyncSession = Depends(get_database)  # Dependency injection for AsyncSession
+async def add_profile(
+    profile_data: AnimalProfileCreate, 
+    db_pool: AsyncConnectionPool = Depends(get_db_connection)
 ):
-    return await add_new_profile(db, profile_data.dict())
+    """
+    Add a new animal profile.
+    """
+    return await create_profile(db_pool, profile_data)
 
 @router.put("/{profile_id}", response_model=AnimalProfileResponse)
-async def update_profile(
+async def modify_profile(
     profile_id: int,
     profile_data: AnimalProfileCreate,
-    db: AsyncSession = Depends(get_database),
+    db_pool: AsyncConnectionPool = Depends(get_db_connection),
 ):
-    try:
-        updated_profile = await update_profile_by_id(db, profile_id, profile_data.dict())
-        return updated_profile
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    
-@router.delete("{profile_id}")
-async def delete_profile(profile_id: int, db: AsyncSession = Depends(get_database)):
     """
-    route to delete an animal profile by its ID
+    Update an animal profile by ID.
     """
-    try:
-        return await remove_profile(db, profile_id)
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    updated_profile = await update_profile(db_pool, profile_id, profile_data.model_dump())
+    if not updated_profile:
+        raise HTTPException(status_code=404, detail="Profile not found")
+    return updated_profile
+
+@router.delete("/{profile_id}")
+async def remove_profile(profile_id: int, db_pool: AsyncConnectionPool = Depends(get_db_connection)):
+    """
+    Delete an animal profile by ID.
+    """
+    success = await delete_profile(db_pool, profile_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Profile not found")
+    return {"message": f"Profile with ID {profile_id} successfully deleted."}
