@@ -9,6 +9,7 @@ import {
 import { useDisclosure } from "@mantine/hooks";
 import "@mantine/core/styles.css";
 import DoubleNavbar from "@/components/Navbar/Navbar";
+import { theme } from '../theme';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const [opened, { toggle }] = useDisclosure();
@@ -21,7 +22,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <title>My App</title>
       </head>
       <body>
-        <MantineProvider>
+      <MantineProvider theme={theme}>
           <AppShell
             header={{ height: 60 }}
             navbar={{
@@ -47,7 +48,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             {/* Main Content */}
             <AppShell.Main>{children}</AppShell.Main>
           </AppShell>
-        </MantineProvider>
+          {children}</MantineProvider>
       </body>
     </html>
   );

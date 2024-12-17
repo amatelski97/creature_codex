@@ -2,12 +2,12 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import Optional
 
 from psycopg_pool import AsyncConnectionPool
-
 from app.core.dependencies import get_db_connection
 from app.schemas.animal_profiles import AnimalProfileCreate, AnimalProfileResponse
 from app.repositories.animal_profiles import (
     get_all_profiles,
     get_profile_by_id,
+    get_profile_by_category_and_id,  # Added
     create_profile,
     delete_profile,
     update_profile,
@@ -41,6 +41,34 @@ async def fetch_profile_by_id(profile_id: int, db_pool: AsyncConnectionPool = De
     if not profile:
         raise HTTPException(status_code=404, detail="Profile not found")
     return profile
+
+@router.get("/", response_model=list[AnimalProfileResponse])
+async def fetch_profiles_by_category(
+    category: str = Query(..., description="Filter by animal category"),
+    db_pool: AsyncConnectionPool = Depends(get_db_connection),
+):
+    """
+    Fetch animal profiles filtered by category.
+    """
+    profiles = await get_all_profiles(db_pool, category)
+    if not profiles:
+        raise HTTPException(status_code=404, detail="No profiles found")
+    return profiles
+
+@router.get("/{category}/{id}", response_model=AnimalProfileResponse)
+async def fetch_profile_by_category_and_id(
+    category: str,
+    id: int,
+    db_pool: AsyncConnectionPool = Depends(get_db_connection),
+):
+    """
+    Fetch a single animal profile by category and ID.
+    """
+    profile = await get_profile_by_category_and_id(db_pool, id, category)
+    if not profile:
+        raise HTTPException(status_code=404, detail="Profile not found")
+    return profile
+
 
 @router.post("", response_model=AnimalProfileResponse)
 async def add_profile(

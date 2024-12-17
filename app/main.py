@@ -19,6 +19,7 @@ app.include_router(animal_profiles.router, prefix="/api/profiles", tags=["Animal
 app.include_router(weights.router, prefix="/api/weights", tags=["Weights"])
 app.include_router(deep_cleans.router, prefix="/api/deep_clean", tags=["Deep Cleans"])
 # Register startup and shutdown events for database connection pool
+
 @app.on_event("startup")
 async def startup_event():
     """
